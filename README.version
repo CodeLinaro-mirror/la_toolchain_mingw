@@ -1,4 +1,4 @@
 http://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/mingw-w64-v4.0.4.tar.bz2/download
 Version: 4.0.4
-BugComponent: 77026
-Owners: danalbert, enh, srhines
+BugComponent: 157440
+Owners: digit, joshualang
