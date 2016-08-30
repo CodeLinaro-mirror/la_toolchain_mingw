@@ -225,6 +225,22 @@ setup_host_build_env ()
     export LDFLAGS="$BUILD_LDFLAGS"
 }
 
+setup_mingw_build_env ()
+{
+    local BINPREFIX=$INSTALL_DIR/bin/x86_64-w64-mingw32-
+
+    CC=${BINPREFIX}gcc
+    CXX=${BINPREFIX}g++
+    LD=${BINPREFIX}ld
+    AS=${BINPREFIX}as
+    AR=${BINPREFIX}ar
+    RANLIB=${BINPREFIX}ranlib
+    RC=${BINPREFIX}windres
+    STRIP=${BINPREFIX}strip
+    export CC CXX LD AS AR RANLIB RC STRIP
+
+}
+
 setup_install_env ()
 {
     export PATH=$INSTALL_DIR/bin:$PATH
@@ -321,11 +337,55 @@ build_mingw_tools ()
         mkdir -p $OUT_DIR/$PKGNAME &&
         cd $OUT_DIR/$PKGNAME &&
         log "$PKGNAME: Configuring" &&
-        run $MINGW_W64_SRC/mingw-w64-tools/widl/configure --prefix=$INSTALL_DIR --target=$TARGET_TAG
+        run $MINGW_W64_SRC/mingw-w64-tools/widl/configure --prefix=$INSTALL_DIR --target=$TARGET_TAG --includedir=$OUT_DIR/install/x86_64-w64-mingw32-4.8/x86_64-w64-mingw32/
         fail_panic "Can't configure mingw-64-tools"
         log "$PKGNAME: Installing" &&
         run make install -j$JOBS
     ) || exit 1
+}
+
+build_mingw_pthreads_lib ()
+{
+    local PKGNAME=$1
+    local CONFIGURE_EXTRA_ARGS=$2
+
+    (
+        mkdir -p $OUT_DIR/$PKGNAME &&
+        cd $OUT_DIR/$PKGNAME &&
+        setup_mingw_build_env &&
+        log "$PKGNAME (32-bit): Configuring" &&
+        run $MINGW_W64_SRC/mingw-w64-libraries/winpthreads/configure --prefix=$PREFIX_FOR_TARGET --target=$TARGET_TAG --host=$TARGET_TAG $CONFIGURE_EXTRA_ARGS &&
+        fail_panic "Can't configure $PKGNAME"
+    ) || exit 1
+
+    # run it once so fakelib/libgcc.a is created and make subsequently fails
+    # while looking for libpthread.a.  Copy libgcc.a to libpthread.a and
+    # retry.
+    cd $OUT_DIR/$PKGNAME && run make install -j$JOBS
+
+    (
+        cd $OUT_DIR/$PKGNAME
+        cp fakelib/libgcc.a fakelib/libpthread.a &&
+        log "$PKGNAME: Installing" &&
+        run make install -j$JOBS
+    ) || exit 1
+}
+
+build_mingw_pthreads ()
+{
+    local PKGNAME=$1
+
+    (
+        CFLAGS="$CFLAGS -m32"
+        CXXFLAGS="$CXXFLAGS -m32"
+        LDFLAGS="-m32"
+        RCFLAGS="-F pe-i386"
+        export CFLAGS CXXFLAGS LDFLAGS RCFLAGS
+        build_mingw_pthreads_lib $PKGNAME-32 "--build=$BUILD_TAG32 --libdir=$PREFIX_FOR_TARGET/lib32"
+        (run cp $PREFIX_FOR_TARGET/bin/libwinpthread-1.dll $PREFIX_FOR_TARGET/lib32) || exit 1
+    )
+
+    build_mingw_pthreads_lib $PKGNAME-64 "--build=$BUILD_TAG64"
 }
 
 # Install the right mingw64 headers into the sysroot
@@ -431,6 +491,7 @@ if [ "$TARGET_MULTILIBS" ]; then
 fi
 var_append GCC_CONFIGURE_OPTIONS "--enable-languages=c,c++"
 var_append GCC_CONFIGURE_OPTIONS "--with-sysroot=$INSTALL_DIR"
+var_append GCC_CONFIGURE_OPTIONS "--enable-threads=posix"
 
 # A bug in MinGW-w64 forces us to build and use widl.
 build_mingw_tools mingw-w64-tools
@@ -444,6 +505,9 @@ if [ "$TARGET_MULTILIBS" ]; then
 fi
 
 build_mingw_crt mingw-w64-crt $CRT_CONFIGURE_OPTIONS
+
+# Build winpthreads
+build_mingw_pthreads mingw-w64-pthreads
 
 build_libgcc gcc-$GCC_VERSION
 
