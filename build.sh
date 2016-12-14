@@ -115,7 +115,7 @@ MPFR_VERSION=3.1.1
 MPC_VERSION=1.0.1
 BINUTILS_VERSION=2.25
 GCC_VERSION=4.8.3
-MINGW_W64_VERSION=v4.0.4
+MINGW_W64_VERSION=v5.0.0
 
 TARGET_ARCH=x86_64
 TARGET_MULTILIBS=true  # not empty to enable multilib
@@ -398,7 +398,7 @@ build_mingw_headers ()
         cd $OUT_DIR/$PKGNAME &&
         log "$PKGNAME: Configuring" &&
         run $MINGW_W64_SRC/mingw-w64-headers/configure --prefix=$PREFIX_FOR_TARGET --host=$TARGET_TAG \
-            --build=$HOST_TAG --with-widl=$WITH_WIDL --enable-sdk=all --enable-secure-api
+            --build=$HOST_TAG --enable-sdk=all --enable-secure-api
         fail_panic "Can't configure mingw-64-headers"
 
         run make
@@ -493,7 +493,6 @@ var_append GCC_CONFIGURE_OPTIONS "--enable-languages=c,c++"
 var_append GCC_CONFIGURE_OPTIONS "--with-sysroot=$INSTALL_DIR"
 var_append GCC_CONFIGURE_OPTIONS "--enable-threads=posix"
 
-# A bug in MinGW-w64 forces us to build and use widl.
 build_mingw_tools mingw-w64-tools
 build_mingw_headers mingw-w64-headers
 
