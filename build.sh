@@ -337,6 +337,7 @@ if [ "$TARGET_MULTILIBS" ]; then
 fi
 
 var_append BINUTILS_CONFIGURE_OPTIONS "--with-sysroot=$INSTALL_DIR"
+var_append BINUTILS_CONFIGURE_OPTIONS "--enable-lto --enable-plugin --enable-gold"
 
 build_binutils_package binutils-$BINUTILS_VERSION $BINUTILS_CONFIGURE_OPTIONS
 
