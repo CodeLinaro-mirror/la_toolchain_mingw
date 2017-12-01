@@ -504,6 +504,7 @@ fi
 var_append GCC_CONFIGURE_OPTIONS "--enable-languages=c,c++"
 var_append GCC_CONFIGURE_OPTIONS "--with-sysroot=$INSTALL_DIR"
 var_append GCC_CONFIGURE_OPTIONS "--enable-threads=posix"
+var_append GCC_CONFIGURE_OPTIONS "--enable-shared=libgcc"
 
 build_mingw_tools mingw-w64-tools
 build_mingw_headers mingw-w64-headers
