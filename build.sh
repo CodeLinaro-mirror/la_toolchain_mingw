@@ -220,7 +220,7 @@ MINGW_W64_SRC=$TOOLCHAIN_DIR/mingw/mingw-w64-$MINGW_W64_VERSION
 
 setup_host_build_env ()
 {
-    local BINPREFIX=$ANDROID_BUILD_TOP/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.8/bin/x86_64-linux-
+    local BINPREFIX=$ANDROID_BUILD_TOP/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.15-4.8/bin/x86_64-linux-
 
     CC=${BINPREFIX}gcc
     CXX=${BINPREFIX}g++
