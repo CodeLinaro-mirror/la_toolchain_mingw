@@ -562,6 +562,8 @@ rm -f $INSTALL_DIR/bin/x86_64-w64-mingw32-gcc-4.8.3
 rm -f $INSTALL_DIR/x86_64-w64-mingw32/bin/c++
 rm -f $INSTALL_DIR/x86_64-w64-mingw32/bin/g++
 rm -f $INSTALL_DIR/x86_64-w64-mingw32/bin/gcc
+rm -f $INSTALL_DIR/libexec/gcc/x86_64-w64-mingw32/4.8.3/cc1
+rm -f $INSTALL_DIR/libexec/gcc/x86_64-w64-mingw32/4.8.3/cc1plus
 
 
 # Let's generate the licenses/ directory
